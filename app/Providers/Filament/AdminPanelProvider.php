@@ -35,7 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandLogo(asset('images/logo.png'))
+            // ->brandLogo(asset('images/logo.png'))
             ->colors([
                 'danger' => Color::Rose,
                 'gray' => Color::Gray,
@@ -76,6 +76,11 @@ class AdminPanelProvider extends PanelProvider
                             ->url(route('filament.admin.pages.dashboard'))
                             ->icon('heroicon-o-home')
                             ->isActiveWhen(fn () => request()->routeIs('filament.admin.pages.dashboard')),
+                        NavigationItem::make('Products')
+                            ->url(route('filament.admin.resources.products.index'))
+                            ->icon('heroicon-o-shopping-cart')
+                            ->hidden(fn () => !auth()->user()->can('can view products'))
+                            ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.products.index', 'filament.admin.resources.products.edit', 'filament.admin.resources.products.create', 'filament.admin.resources.products.view'))
                     ])
                     ->groups([ // Grouped items
                         NavigationGroup::make('Users Settings')
