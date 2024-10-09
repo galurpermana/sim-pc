@@ -78,7 +78,7 @@ class AdminPanelProvider extends PanelProvider
                             ->isActiveWhen(fn () => request()->routeIs('filament.admin.pages.dashboard')),
                         NavigationItem::make('Products')
                             ->url(route('filament.admin.resources.products.index'))
-                            ->icon('heroicon-o-shopping-cart')
+                            ->icon('heroicon-o-archive-box')
                             ->hidden(fn () => !auth()->user()->can('can view products'))
                             ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.products.index', 'filament.admin.resources.products.edit', 'filament.admin.resources.products.create', 'filament.admin.resources.products.view'))
                     ])
