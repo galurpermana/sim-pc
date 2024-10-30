@@ -82,6 +82,19 @@ class AdminPanelProvider extends PanelProvider
                             ->hidden(fn () => !auth()->user()->can('can view products'))
                             ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.products.index', 'filament.admin.resources.products.edit', 'filament.admin.resources.products.create', 'filament.admin.resources.products.view'))
                     ])
+                    ->groups([
+                        NavigationGroup::make('Transactions')
+                            ->items([
+                                NavigationItem::make('Transaction Logs')
+                                    ->url(route('filament.admin.resources.transactions.index'))
+                                    ->icon('heroicon-o-shopping-cart')
+                                    ->isActiveWhen(fn()=> request()->routeIs('filament.admin.resources.transactions.index', 'filament.admin.resources.transactions.edit', 'filament.admin.resources.transactions.view')),
+                                NavigationItem::make('Cashiers')
+                                    ->url(route('filament.admin.resources.transactions.create'))
+                                    ->icon('heroicon-o-banknotes')
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.transactions.create')),
+                            ])
+                    ])
                     ->groups([ // Grouped items
                         NavigationGroup::make('Users Settings')
                             
@@ -90,15 +103,15 @@ class AdminPanelProvider extends PanelProvider
                                 NavigationItem::make('Roles')
                                     ->url(route('filament.admin.resources.roles.index')) // Update with actual route
                                     ->icon('heroicon-o-shield-check')
-                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.roles.index', 'filament.admin.resources.roles.edit', 'filament.admin.resources.roles.create', 'filament.admin.resources.roles.view'))
-                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.roles.index', 'filament.admin.resources.roles.edit', 'filament.admin.resources.roles.create', 'filament.admin.resources.roles.view')),
+                                    // ->hidden(fn () => !auth()->user()->can('view users settings')),
 
                             
                                 NavigationItem::make('Permissions')
                                     ->url(route('filament.admin.resources.permissions.index')) // Update with actual route
                                     ->icon('heroicon-o-lock-closed')
-                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.permissions.index', 'filament.admin.resources.permissions.edit', 'filament.admin.resources.permissions.create', 'filament.admin.resources.permissions.view'))
-                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.permissions.index', 'filament.admin.resources.permissions.edit', 'filament.admin.resources.permissions.create', 'filament.admin.resources.permissions.view')),
+                                    // ->hidden(fn () => !auth()->user()->can('view users settings')),
 
                                         ])
                             // ->itemsWhen(fn () => auth()->user()->can('view users settings')),

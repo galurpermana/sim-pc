@@ -31,6 +31,11 @@ class ProductResource extends Resource
                     ->numeric()
                     ->label('Stok')
                     ->minValue(0),
+                Forms\Components\TextInput::make('price')
+                    ->required()
+                    ->numeric()
+                    
+                    ->label('Harga'),
             ]);
     }
 
@@ -38,8 +43,9 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Nama Produk'),
-                Tables\Columns\TextColumn::make('stock')->label('Stok'),
+                Tables\Columns\TextColumn::make('name')->label('Priduct Name'),
+                Tables\Columns\TextColumn::make('stock')->label('Stock'),
+                Tables\Columns\TextColumn::make('price')->label('Price')->money('IDR'),
             ])
             ->filters([
                 //
