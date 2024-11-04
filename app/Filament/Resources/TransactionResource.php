@@ -58,6 +58,7 @@ class TransactionResource extends Resource
                                 ->numeric()
                                 ->required()
                                 ->reactive()
+                            
                                 ->minValue(1)
                                 ->afterStateUpdated(function (callable $get, callable $set) {
                                     $quantity = (int)($get('quantity') ?? 0);
@@ -139,29 +140,6 @@ class TransactionResource extends Resource
         ]);
     }
     
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        // Set the authenticated user's ID
-        $data['user_id'] = auth()->id();
-    
-        // Reduce stock for each product in transaction_products
-        foreach ($data['transaction_products'] as &$transactionProduct) {
-            $product = Product::find($transactionProduct['product_id']);
-            if ($product) {
-                // Check if there is enough stock
-                if ($product->stock >= $transactionProduct['quantity']) {
-                    // Reduce stock
-                    $product->stock -= $transactionProduct['quantity'];
-                    $product->save();
-                } else {
-                    // Handle insufficient stock (optional: throw an exception or set an error message)
-                    throw new \Exception("Insufficient stock for product: {$product->name}");
-                }
-            }
-        }
-    
-        return $data;
-    }
     
 
 
@@ -182,13 +160,23 @@ class TransactionResource extends Resource
         return $table
             ->query(Transaction::with(['transactionProducts.product', 'user'])) // Eager load relationships
             ->columns([
-                TextColumn::make('user.name')->label('Employee'),
-                TextColumn::make('total')->label('Total')->currency('IDR'),
-                TextColumn::make('created_at')->label('Date')->dateTime(),
+                TextColumn::make('No.')
+                    ->rowIndex(),
+                TextColumn::make('user.name')->label('Employee')
+                    
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('total')->label('Total')->currency('IDR')
+                    ->searchable(),
+                    // ->sortable(),
+                TextColumn::make('created_at')->label('Date')->dateTime()
+                    ->sortable()
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->modalWidth('7xl'),
+                    ->modalWidth('7xl')
+                    ->slideOver(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
