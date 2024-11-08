@@ -35,6 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            
             // ->brandLogo(asset('images/logo.png'))
             ->colors([
                 'danger' => Color::Rose,
@@ -103,15 +104,15 @@ class AdminPanelProvider extends PanelProvider
                                 NavigationItem::make('Roles')
                                     ->url(route('filament.admin.resources.roles.index')) // Update with actual route
                                     ->icon('heroicon-o-shield-check')
-                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.roles.index', 'filament.admin.resources.roles.edit', 'filament.admin.resources.roles.create', 'filament.admin.resources.roles.view')),
-                                    // ->hidden(fn () => !auth()->user()->can('view users settings')),
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.roles.index', 'filament.admin.resources.roles.edit', 'filament.admin.resources.roles.create', 'filament.admin.resources.roles.view'))
+                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
 
                             
                                 NavigationItem::make('Permissions')
                                     ->url(route('filament.admin.resources.permissions.index')) // Update with actual route
                                     ->icon('heroicon-o-lock-closed')
-                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.permissions.index', 'filament.admin.resources.permissions.edit', 'filament.admin.resources.permissions.create', 'filament.admin.resources.permissions.view')),
-                                    // ->hidden(fn () => !auth()->user()->can('view users settings')),
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.permissions.index', 'filament.admin.resources.permissions.edit', 'filament.admin.resources.permissions.create', 'filament.admin.resources.permissions.view'))
+                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
 
                                         ])
                             // ->itemsWhen(fn () => auth()->user()->can('view users settings')),

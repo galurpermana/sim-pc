@@ -12,7 +12,8 @@ class weekly_revenue extends BaseWidget
     {
         return [
             Stat::make( 'Weekly Revenue',Transaction::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek(),])->sum('total')),
-            Stat::make( 'Monthly Revenue',Transaction::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth(),])->sum('total')),
+            Stat::make(now()->format('F') . ' Revenue', Transaction::whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])->sum('total')),
+
         ];
     }
 }
