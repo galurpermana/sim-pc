@@ -15,13 +15,13 @@ class UserSeeder extends Seeder
     {
         \App\Models\User::factory()->create([
             'name' => 'super Admin',
-            'email' => 'superadmin@admin',
+            'email' => 'superadmin@gmail.com',
             'password' => bcrypt('12345678'),
         ]);
 
         \App\Models\User::factory()->create([
             'name' => 'Admin',
-            'email' => 'admin@admin',
+            'email' => 'admin@gmail.com',
             'password' => bcrypt('12345678'),
         ]);
 
@@ -53,13 +53,13 @@ class UserSeeder extends Seeder
 
             [
                 'id' => 5,
-                'name' => 'can delete products',
+                'name' => 'can delete product',
                 'guard_name' => 'web',
             ],
 
             [
                 'id' => 6,
-                'name' => 'can add products',
+                'name' => 'can add product',
                 'guard_name' => 'web',
             ],
 
