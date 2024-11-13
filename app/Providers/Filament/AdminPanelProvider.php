@@ -94,6 +94,10 @@ class AdminPanelProvider extends PanelProvider
                                     ->url(route('filament.admin.resources.transactions.create'))
                                     ->icon('heroicon-o-banknotes')
                                     ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.transactions.create')),
+                                NavigationItem::make('Payment')
+                                    ->url(route('filament.admin.resources.payments.index'))
+                                    ->icon('heroicon-o-rectangle-stack')
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.payments.index', 'filament.admin.resources.payments.create', 'filament.admin.resources.payments.edit')),
                             ])
                     ])
                     ->groups([ // Grouped items
@@ -113,10 +117,11 @@ class AdminPanelProvider extends PanelProvider
                                     ->icon('heroicon-o-lock-closed')
                                     ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.permissions.index', 'filament.admin.resources.permissions.edit', 'filament.admin.resources.permissions.create', 'filament.admin.resources.permissions.view'))
                                     ->hidden(fn () => !auth()->user()->can('view users settings')),
-
                                         ])
                             // ->itemsWhen(fn () => auth()->user()->can('view users settings')),
                     ]);
+
+                    
             });
             
             
