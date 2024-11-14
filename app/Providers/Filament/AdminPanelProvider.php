@@ -35,7 +35,6 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            
             // ->brandLogo(asset('images/logo.png'))
             ->colors([
                 'danger' => Color::Rose,
@@ -81,7 +80,7 @@ class AdminPanelProvider extends PanelProvider
                             ->url(route('filament.admin.resources.products.index'))
                             ->icon('heroicon-o-archive-box')
                             ->hidden(fn () => !auth()->user()->can('can view products'))
-                            ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.products.index', 'filament.admin.resources.products.edit', 'filament.admin.resources.products.create', 'filament.admin.resources.products.view'))
+                            ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.products.index', 'filament.admin.resources.products.edit', 'filament.admin.resources.products.create', 'filament.admin.resources.products.view')),
                     ])
                     ->groups([
                         NavigationGroup::make('Transactions')
@@ -89,7 +88,7 @@ class AdminPanelProvider extends PanelProvider
                                 NavigationItem::make('Transaction Logs')
                                     ->url(route('filament.admin.resources.transactions.index'))
                                     ->icon('heroicon-o-shopping-cart')
-                                    ->isActiveWhen(fn()=> request()->routeIs('filament.admin.resources.transactions.index', 'filament.admin.resources.transactions.edit', 'filament.admin.resources.transactions.view')),
+                                    ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.transactions.index', 'filament.admin.resources.transactions.edit', 'filament.admin.resources.transactions.view')),
                                 NavigationItem::make('Cashiers')
                                     ->url(route('filament.admin.resources.transactions.create'))
                                     ->icon('heroicon-o-banknotes')
@@ -103,21 +102,24 @@ class AdminPanelProvider extends PanelProvider
                                     ->url(route('filament.admin.resources.users.index')) // Update with actual route
                                     ->icon('heroicon-o-shield-check')
                                     ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.users.index', 'filament.admin.resources.users.edit', 'filament.admin.resources.users.create', 'filament.admin.resources.users.view'))
-                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
+                                    ->hidden(fn () => !auth()->user()->hasRole('Super Admin')), // Hanya tampil untuk Super Admin
+
+                                // Menambahkan items dari UserResource hanya jika Super Admin
+        
 
                                 NavigationItem::make('Roles')
                                     ->url(route('filament.admin.resources.roles.index')) // Update with actual route
                                     ->icon('heroicon-o-shield-check')
                                     ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.roles.index', 'filament.admin.resources.roles.edit', 'filament.admin.resources.roles.create', 'filament.admin.resources.roles.view'))
-                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
-                            
+                                    ->hidden(fn () => !auth()->user()->hasRole('Super Admin')), // Hanya tampil untuk Super Admin
+                                
                                 NavigationItem::make('Permissions')
                                     ->url(route('filament.admin.resources.permissions.index')) // Update with actual route
                                     ->icon('heroicon-o-lock-closed')
                                     ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.permissions.index', 'filament.admin.resources.permissions.edit', 'filament.admin.resources.permissions.create', 'filament.admin.resources.permissions.view'))
-                                    ->hidden(fn () => !auth()->user()->can('view users settings')),
-                                        ])
-                    ]);     
-            });     
+                                    ->hidden(fn () => !auth()->user()->hasRole('Super Admin')), // Hanya tampil untuk Super Admin
+                            ])
+                    ]);
+            });
     }
 }
