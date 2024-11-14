@@ -9,7 +9,7 @@ class Transaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'total', 'payment_method'];
+    protected $fillable = ['user_id', 'total', 'payment_method', 'payment_proof'];
 
     public function user()
     {

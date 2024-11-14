@@ -18,6 +18,8 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,7 +126,6 @@ class TransactionResource extends Resource
                             }
                         })
                         ->reactive(),
-
                     TextInput::make('change')
                         ->label('Change')
                         ->numeric()
@@ -134,15 +135,15 @@ class TransactionResource extends Resource
                         ->default(0)
                         ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash'),
 
-                    
+                    FileUpload::make('payment_proof')
+                        ->label('Payment Proof')
+                        ->disk('public') // Gunakan disk public
+                        ->directory('payment-proofs') // Menyimpan file di direktori 'payment-proofs'
+                        ->image() // Validasi hanya menerima gambar
                 ])->columnspan('1'),
-
         ]);
     }
     
-    
-
-
     protected static function updateTotal(callable $get, callable $set)
     {
         // Calculate total from transaction products
@@ -152,8 +153,6 @@ class TransactionResource extends Resource
         }, 0);
         $set('../../total', $total);
     }
-
-
 
     public static function table(Table $table): Table
     {
@@ -172,6 +171,9 @@ class TransactionResource extends Resource
                 TextColumn::make('created_at')->label('Date')->dateTime()
                     ->sortable()
                     ->searchable(),
+                ImageColumn::make('payment_proof')
+                    ->label('Payment Proof')
+                    ->disk('public') // Pastikan sesuai dengan disk yang digunakan di konfigurasi FileUpload
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -185,10 +187,6 @@ class TransactionResource extends Resource
                 ]),
             ]);
     }
-
-
-
-
 
     public static function getRelations(): array
     {
