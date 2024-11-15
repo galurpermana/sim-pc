@@ -100,7 +100,7 @@ class AdminPanelProvider extends PanelProvider
                             ->items([
                                 NavigationItem::make('User')
                                     ->url(route('filament.admin.resources.users.index')) // Update with actual route
-                                    ->icon('heroicon-o-shield-check')
+                                    ->icon('heroicon-o-users')
                                     ->isActiveWhen(fn () => request()->routeIs('filament.admin.resources.users.index', 'filament.admin.resources.users.edit', 'filament.admin.resources.users.create', 'filament.admin.resources.users.view'))
                                     ->hidden(fn () => !auth()->user()->hasRole('Super Admin')), // Hanya tampil untuk Super Admin
 
