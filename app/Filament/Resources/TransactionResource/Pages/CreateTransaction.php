@@ -21,6 +21,41 @@ class CreateTransaction extends CreateRecord
             ;
     }
 
+    protected function afterCreate(): void
+    {
+        // Access the created transaction using $this->record (provided by Filament)
+        $transaction = $this->record;
+    
+        try {
+            // Loop through the transaction's associated products
+            foreach ($transaction->transactionProducts as $transactionProduct) {
+                // Retrieve the associated product
+                $product = $transactionProduct->product;
+    
+                if ($product) {
+                    // Check if there is enough stock available
+                    if ($transactionProduct->quantity > $product->stock) {
+                        throw new \Exception("Insufficient stock for product: {$product->name}");
+                    }
+    
+                    // Reduce the stock by the quantity in the transaction
+                    $product->stock -= $transactionProduct->quantity;
+    
+                    // Save the updated product stock
+                    $product->save();
+                } else {
+                    throw new \Exception("Product not found for transaction product ID: {$transactionProduct->id}");
+                }
+            }
+        } catch (\Exception $e) {
+            Notification::make()
+                ->danger()
+                ->title('Error')
+                ->body($e->getMessage());
+        }
+    }
+    
+
     protected function getCreatedNotificationTitle(): ?string
     {
         return 'Transaction created successfully!';

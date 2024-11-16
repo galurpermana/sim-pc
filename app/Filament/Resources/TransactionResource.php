@@ -36,6 +36,7 @@ class TransactionResource extends Resource
     {
         return $form->schema([
             Hidden::make('user_id')->default(auth()->id()),
+
             Section::make('Transaction Products')
                 ->schema([
                     Repeater::make('transaction_products')
@@ -53,41 +54,58 @@ class TransactionResource extends Resource
                                         $quantity = (int)($get('quantity') ?? 0);
                                         $subtotal = $product->price * $quantity;
                                         $set('subtotal', $subtotal);
+                                        $set('stock', $product->stock); // Set stock value dynamically
                                         self::updateTotal($get, $set);
                                     }
-                                }),
+                                })
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
                             TextInput::make('quantity')
                                 ->numeric()
                                 ->required()
                                 ->reactive()
-                            
                                 ->minValue(1)
                                 ->afterStateUpdated(function (callable $get, callable $set) {
                                     $quantity = (int)($get('quantity') ?? 0);
                                     $product = Product::find($get('product_id'));
                                     if ($product) {
+                                        $stock = $product->stock;
+                                        if ($quantity > $stock) {
+                                            $set('quantity', $stock); // Reset to stock value if exceeded
+                                            
+                                        }
                                         $subtotal = $product->price * $quantity;
                                         $set('subtotal', $subtotal);
                                         self::updateTotal($get, $set);
                                     }
                                 }),
+
                             TextInput::make('subtotal')
                                 ->label('Sub Total')
                                 ->numeric()
                                 ->prefix('Rp. ')
+                                ->readonly(),
+
+                            TextInput::make('stock')
+                                ->label('Stock')
+                                ->numeric()
                                 ->readonly()
-                                ->columnSpan('full'),
+                                ->reactive()
+                                ->afterStateUpdated(function (callable $get, callable $set) {
+                                    $product = Product::find($get('product_id'));
+                                    if ($product) {
+                                        $set('stock', $product->stock); // Set stock dynamically
+                                    }
+                                }),
                         ])
-                        ->columns(['sm' => 1, 
-                        'md' => 2]) 
+                        ->columns(['sm' => 1, 'md' => 2])
                         ->reactive()
                         ->disableItemMovement(),
-
-                ])->columnspan('1'),
+                ])
+                ->columnspan('1'),
 
             Section::make('Transaction Details')
                 ->schema([
-
                     TextInput::make('total')
                         ->numeric()
                         ->label('Total Amount')
@@ -95,7 +113,6 @@ class TransactionResource extends Resource
                         ->readonly()
                         ->prefix('Rp. ')
                         ->reactive()
-
                         ->default(0),
 
                     Select::make('payment_method')
@@ -113,7 +130,6 @@ class TransactionResource extends Resource
                         ->label('Cash Received')
                         ->numeric()
                         ->prefix('Rp. ')
-                        
                         ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash')
                         ->afterStateUpdated(function (callable $get, callable $set) {
                             $cashReceived = (int)($get('cash_received') ?? 0);
@@ -126,6 +142,7 @@ class TransactionResource extends Resource
                             }
                         })
                         ->reactive(),
+
                     TextInput::make('change')
                         ->label('Change')
                         ->numeric()
@@ -137,13 +154,14 @@ class TransactionResource extends Resource
 
                     FileUpload::make('payment_proof')
                         ->label('Payment Proof')
-                        ->disk('public') // Gunakan disk public
-                        ->directory('payment-proofs') // Menyimpan file di direktori 'payment-proofs'
-                        ->image() // Validasi hanya menerima gambar
-                ])->columnspan('1'),
+                        ->disk('public') // Use the public disk
+                        ->directory('payment-proofs') // Save files in the 'payment-proofs' directory
+                        ->image() // Validate to accept only images
+                ])
+                ->columnspan('1'),
         ]);
     }
-    
+
     protected static function updateTotal(callable $get, callable $set)
     {
         // Calculate total from transaction products
@@ -162,12 +180,12 @@ class TransactionResource extends Resource
                 TextColumn::make('No.')
                     ->rowIndex(),
                 TextColumn::make('user.name')->label('Employee')
-                    
+
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('total')->label('Total')->currency('IDR')
                     ->searchable(),
-                    // ->sortable(),
+                // ->sortable(),
                 TextColumn::make('created_at')->label('Date')->dateTime()
                     ->sortable()
                     ->searchable(),

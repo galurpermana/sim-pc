@@ -55,6 +55,7 @@ class ProductResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->hidden(fn()=> !auth()->user()->can('can edit products')),
+                Tables\Actions\ViewAction::make()->slideOver(),
                 // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
