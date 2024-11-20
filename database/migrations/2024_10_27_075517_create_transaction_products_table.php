@@ -13,16 +13,17 @@ return new class extends Migration
     {
         Schema::create('transaction_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transaction_id')->constrained('transactions');
+            $table->foreignId('transaction_id')
+                  ->constrained('transactions')
+                  ->onDelete('cascade'); // Add this line to enable cascading delete
             $table->foreignId('product_id')->constrained('products');
             $table->integer('quantity');
-            $table->string('image')->nullable()->change();
-            // $table->decimal('price', 10, 2);
+            $table->string('image')->nullable(); // Removed `->change()` as it is not needed in a new migration
             $table->decimal('subtotal', 10, 2);
             $table->timestamps();
         });
-        
     }
+    
 
     /**
      * Reverse the migrations.
