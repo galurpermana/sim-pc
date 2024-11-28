@@ -7,11 +7,18 @@ use App\Models\Transaction;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
+use WithFormFields;
+use WithTableFilters;
+use WithTableActions;
+use WithPositionCalculations;
 use Filament\Resources\Resource;
 use Filament\Infolists\Components\Infolist;
 use Filament\Infolists\Components\InfolistItem;
 use Filament\Tables;
+use Carbon\Carbon;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Hidden;
@@ -72,7 +79,7 @@ class TransactionResource extends Resource
                                         $stock = $product->stock;
                                         if ($quantity > $stock) {
                                             $set('quantity', $stock); // Reset to stock value if exceeded
-                                            
+
                                         }
                                         $subtotal = $product->price * $quantity;
                                         $set('subtotal', $subtotal);
@@ -203,8 +210,39 @@ class TransactionResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->filters([
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators['created_from'] = 'Transaction from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                        }
+                        if ($data['created_until'] ?? null) {
+                            $indicators['created_until'] = 'Transaction until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                        }
+                        return $indicators;
+                    }),
+                ]);
     }
+    
 
     public static function getRelations(): array
     {
