@@ -6,6 +6,7 @@ use App\Filament\Resources\TransactionResource;
 use Filament\Notifications\Notification;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Validation\Rules\Can;
 
 class CreateTransaction extends CreateRecord
 {
@@ -20,6 +21,31 @@ class CreateTransaction extends CreateRecord
             ->body('The transaction has been created.')
             ;
     }
+
+    // protected function beforeCreate(): void {
+    //     $transaction = $this->data[];
+
+        
+    //     if ($transaction && $transaction->cash_received === !null) {
+    //         if ($transaction->cash_received < $transaction->total) {
+    //             Notification::make()
+    //                 ->danger()
+    //                 ->title('Error')
+    //                 ->body('Uang yang diterima kurang dari total transaksi')
+    //                 ->send();
+    //             $this->halt();
+    //         }
+    //     }  
+    //     if ($transaction && $transaction->payment_method === 'Cash') {
+    //         Notification::make()
+    //             ->danger()    
+    //             ->title('Error')
+    //             ->body('Tidak ada uang yang diterima')
+    //             ->send();
+    //         $this->halt();
+            
+    //     }
+    // }
 
     protected function afterCreate(): void
     {

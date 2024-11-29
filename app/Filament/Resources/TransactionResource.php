@@ -19,6 +19,8 @@ use Carbon\Carbon;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Hidden;
@@ -28,9 +30,12 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Livewire\Notifications;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Closure;
+use Filament\Forms\Get;
 use View;
 
 class TransactionResource extends Resource
@@ -136,19 +141,39 @@ class TransactionResource extends Resource
                     TextInput::make('cash_received')
                         ->label('Cash Received')
                         ->numeric()
+                        ->required()
                         ->prefix('Rp. ')
                         ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash')
                         ->afterStateUpdated(function (callable $get, callable $set) {
                             $cashReceived = (int)($get('cash_received') ?? 0);
                             $total = (int)($get('total') ?? 0);
-                            if ($cashReceived >= $total) {
+
+                            if ($cashReceived < $total) {
+                                $set('cash_received_error', 'Cash received cannot be less than the total amount.');
+                                $set('change', 0);
+                            } else {
+                                $set('cash_received_error', null); // Clear the error if valid
                                 $change = $cashReceived - $total;
                                 $set('change', $change);
-                            } else {
-                                $set('change', 0);
                             }
                         })
-                        ->reactive(),
+                        ->rules([
+                            fn(Get $get): Closure => function ($attribute, $value, Closure $fail) use ($get) {
+                                // Check if 'payment_method' is 'Cash' and 'value' is empty
+                                
+
+                                // Check if 'total' is greater than 0 and 'cash_received' is less than 'total'
+                                if ($get('total') > 0 && $get('cash_received') < $get('total')) {
+                                    $fail('Cash received cannot be less than the total amount.');
+                                }
+                            }
+                        ])
+
+                        ->reactive()
+                        ->helperText(fn(callable $get) => $get('cash_received_error')), // Display error below the field
+
+
+
 
                     TextInput::make('change')
                         ->label('Change')
@@ -166,8 +191,10 @@ class TransactionResource extends Resource
                         ->image() // Validate to accept only images
                 ])
                 ->columnspan('1'),
+
         ]);
     }
+
 
     protected static function updateTotal(callable $get, callable $set)
     {
@@ -215,19 +242,19 @@ class TransactionResource extends Resource
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                            ->placeholder(fn($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
                         Forms\Components\DatePicker::make('created_until')
-                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                            ->placeholder(fn($state): string => now()->format('M d, Y')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['created_from'] ?? null,
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'] ?? null,
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -240,9 +267,9 @@ class TransactionResource extends Resource
                         }
                         return $indicators;
                     }),
-                ]);
+            ]);
     }
-    
+
 
     public static function getRelations(): array
     {
