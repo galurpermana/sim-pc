@@ -45,155 +45,161 @@ class TransactionResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
-    {
-        return $form->schema([
-            Hidden::make('user_id')->default(auth()->id()),
+{
+    return $form->schema([
+        Hidden::make('user_id')->default(auth()->id()),
 
-            Section::make('Transaction Products')
-                ->schema([
-                    Repeater::make('transaction_products')
-                        ->relationship('transactionProducts')
-                        ->label('')
-                        ->schema([
-                            Select::make('product_id')
-                                ->relationship('product', 'name')
-                                ->label('Product')
-                                ->required()
-                                ->reactive()
-                                ->afterStateUpdated(function (callable $get, callable $set) {
-                                    $product = Product::find($get('product_id'));
-                                    if ($product) {
-                                        $quantity = (int)($get('quantity') ?? 0);
-                                        $subtotal = $product->price * $quantity;
-                                        $set('subtotal', $subtotal);
-                                        $set('stock', $product->stock); // Set stock value dynamically
-                                        self::updateTotal($get, $set);
-                                    }
-                                })
-                                ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-
-                            TextInput::make('quantity')
-                                ->numeric()
-                                ->required()
-                                ->reactive()
-                                ->minValue(1)
-                                ->afterStateUpdated(function (callable $get, callable $set) {
+        Section::make('Transaction Products')
+            ->schema([
+                Repeater::make('transaction_products')
+                    ->relationship('transactionProducts')
+                    ->label('')
+                    ->schema([
+                        Select::make('product_id')
+                            ->relationship('product', 'name')
+                            ->label('Product')
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $get, callable $set) {
+                                $product = Product::find($get('product_id'));
+                                if ($product) {
                                     $quantity = (int)($get('quantity') ?? 0);
-                                    $product = Product::find($get('product_id'));
-                                    if ($product) {
-                                        $stock = $product->stock;
-                                        if ($quantity > $stock) {
-                                            $set('quantity', $stock); // Reset to stock value if exceeded
-
-                                        }
-                                        $subtotal = $product->price * $quantity;
-                                        $set('subtotal', $subtotal);
-                                        self::updateTotal($get, $set);
-                                    }
-                                }),
-
-                            TextInput::make('subtotal')
-                                ->label('Sub Total')
-                                ->numeric()
-                                ->prefix('Rp. ')
-                                ->readonly(),
-
-                            TextInput::make('stock')
-                                ->label('Stock')
-                                ->numeric()
-                                ->readonly()
-                                ->reactive()
-                                ->afterStateUpdated(function (callable $get, callable $set) {
-                                    $product = Product::find($get('product_id'));
-                                    if ($product) {
-                                        $set('stock', $product->stock); // Set stock dynamically
-                                    }
-                                }),
-                        ])
-                        ->columns(['sm' => 1, 'md' => 2])
-                        ->reactive()
-                        ->disableItemMovement(),
-                ])
-                ->columnspan('1'),
-
-            Section::make('Transaction Details')
-                ->schema([
-                    TextInput::make('total')
-                        ->numeric()
-                        ->label('Total Amount')
-                        ->required()
-                        ->readonly()
-                        ->prefix('Rp. ')
-                        ->reactive()
-                        ->default(0),
-
-                    Select::make('payment_method')
-                        ->label('Payment Method')
-                        ->required()
-                        ->default('Cash')
-                        ->options([
-                            'Cash' => 'Cash',
-                            'Bank Transfer' => 'Bank Transfer',
-                            'QRIS' => 'QRIS',
-                        ])
-                        ->reactive(),
-
-                    TextInput::make('cash_received')
-                        ->label('Cash Received')
-                        ->numeric()
-                        ->required()
-                        ->prefix('Rp. ')
-                        ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash')
-                        ->afterStateUpdated(function (callable $get, callable $set) {
-                            $cashReceived = (int)($get('cash_received') ?? 0);
-                            $total = (int)($get('total') ?? 0);
-
-                            if ($cashReceived < $total) {
-                                $set('cash_received_error', 'Cash received cannot be less than the total amount.');
-                                $set('change', 0);
-                            } else {
-                                $set('cash_received_error', null); // Clear the error if valid
-                                $change = $cashReceived - $total;
-                                $set('change', $change);
-                            }
-                        })
-                        ->rules([
-                            fn(Get $get): Closure => function ($attribute, $value, Closure $fail) use ($get) {
-                                // Check if 'payment_method' is 'Cash' and 'value' is empty
-                                
-
-                                // Check if 'total' is greater than 0 and 'cash_received' is less than 'total'
-                                if ($get('total') > 0 && $get('cash_received') < $get('total')) {
-                                    $fail('Cash received cannot be less than the total amount.');
+                                    $subtotal = $product->price * $quantity;
+                                    $set('subtotal', $subtotal);
+                                    $set('stock', $product->stock); // Set stock value dynamically
+                                    self::updateTotal($get, $set);
                                 }
+                            })
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                        TextInput::make('quantity')
+                            ->numeric()
+                            ->required()
+                            ->reactive()
+                            ->minValue(1)
+                            ->afterStateUpdated(function (callable $get, callable $set) {
+                                $quantity = (int)($get('quantity') ?? 0);
+                                $product = Product::find($get('product_id'));
+                                if ($product) {
+                                    $stock = $product->stock;
+                                    if ($quantity > $stock) {
+                                        $set('quantity', $stock); // Reset to stock value if exceeded
+                                    }
+                                    $subtotal = $product->price * $quantity;
+                                    $set('subtotal', $subtotal);
+                                    self::updateTotal($get, $set);
+                                }
+                            }),
+
+                        TextInput::make('subtotal')
+                            ->label('Sub Total')
+                            ->numeric()
+                            ->prefix('Rp. ')
+                            ->readonly(),
+
+                        TextInput::make('stock')
+                            ->label('Stock')
+                            ->numeric()
+                            ->readonly()
+                            ->reactive()
+                            ->afterStateUpdated(function (callable $get, callable $set) {
+                                $product = Product::find($get('product_id'));
+                                if ($product) {
+                                    $set('stock', $product->stock); // Set stock dynamically
+                                }
+                            }),
+                    ])
+                    ->columns(['sm' => 1, 'md' => 2])
+                    ->reactive()
+                    ->disableItemMovement(),
+            ])
+            ->columnspan('1'),
+
+        Section::make('Transaction Details')
+            ->schema([
+                TextInput::make('total')
+                    ->numeric()
+                    ->label('Total Amount')
+                    ->required()
+                    ->readonly()
+                    ->prefix('Rp. ')
+                    ->reactive()
+                    ->default(0),
+
+                Select::make('payment_method')
+                    ->label('Payment Method')
+                    ->required()
+                    ->default('Cash')
+                    ->options([
+                        'Cash' => 'Cash',
+                        'Bank Transfer' => 'Bank Transfer',
+                        'QRIS' => 'QRIS',
+                    ])
+                    ->reactive(),
+
+                TextInput::make('cash_received')
+                    ->label('Cash Received')
+                    ->numeric()
+                    ->required()
+                    ->prefix('Rp. ')
+                    ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash')
+                    ->afterStateUpdated(function (callable $get, callable $set) {
+                        $cashReceived = (int)($get('cash_received') ?? 0);
+                        $total = (int)($get('total') ?? 0);
+
+                        if ($cashReceived < $total) {
+                            $set('cash_received_error', 'Cash received cannot be less than the total amount.');
+                            $set('change', 0);
+                        } else {
+                            $set('cash_received_error', null); // Clear the error if valid
+                            $change = $cashReceived - $total;
+                            $set('change', $change);
+                        }
+                    })
+                    ->rules([
+                        fn(Get $get): Closure => function ($attribute, $value, Closure $fail) use ($get) {
+                            if ($get('total') > 0 && $get('cash_received') < $get('total')) {
+                                $fail('Cash received cannot be less than the total amount.');
                             }
-                        ])
+                        }
+                    ])
+                    ->reactive()
+                    ->helperText(fn(callable $get) => $get('cash_received_error')), // Display error below the field
 
-                        ->reactive()
-                        ->helperText(fn(callable $get) => $get('cash_received_error')), // Display error below the field
+                TextInput::make('change')
+                    ->label('Change')
+                    ->numeric()
+                    ->reactive()
+                    ->prefix('Rp. ')
+                    ->readonly()
+                    ->default(0)
+                    ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash'),
+
+                FileUpload::make('payment_proof')
+                    ->label('Payment Proof')
+                    ->disk('public') // Use the public disk
+                    ->directory('payment-proofs') // Save files in the 'payment-proofs' directory
+                    ->image() // Validate to accept only images
+                    ->acceptedFileTypes(['image/jpeg', 'image/png']) // Restrict file types
+                    ->maxSize(2048) // Max file size in KB
+                    ->required(fn(callable $get) => $get('payment_method') !== 'Cash') // Make this field mandatory for non-cash payments
+                    ->hidden(fn(callable $get) => $get('payment_method') === 'Cash') // Hide for cash payments
+                    ->reactive()
+                    ->afterStateUpdated(function (callable $get, callable $set) {
+                        if (!$get('payment_proof') && $get('payment_method') !== 'Cash') {
+                            Notification::make()
+                                ->title('Upload Required')
+                                ->body('Please upload a payment proof for Bank Transfer or QRIS.')
+                                ->warning()
+                                ->send();
+                        }
+                    }),
+            ])
+            ->columnspan('1'),
+    ]);
+}
 
 
-
-
-                    TextInput::make('change')
-                        ->label('Change')
-                        ->numeric()
-                        ->reactive()
-                        ->prefix('Rp. ')
-                        ->readonly()
-                        ->default(0)
-                        ->hidden(fn(callable $get) => $get('payment_method') !== 'Cash'),
-
-                    FileUpload::make('payment_proof')
-                        ->label('Payment Proof')
-                        ->disk('public') // Use the public disk
-                        ->directory('payment-proofs') // Save files in the 'payment-proofs' directory
-                        ->image() // Validate to accept only images
-                ])
-                ->columnspan('1'),
-
-        ]);
-    }
 
 
     protected static function updateTotal(callable $get, callable $set)
